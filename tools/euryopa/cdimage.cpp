@@ -1,5 +1,7 @@
 #include "euryopa.h"
 
+#include <cstring>
+
 /*
  * Streaming limits:
  *
@@ -213,7 +215,7 @@ LoadAllRequestedObjects(void)
 	CPtrNode *p;
 	int id;
 	for(p = requestList.first; p; p = p->next){
-		id = (int)p->item;
+        id = *(int*)p->item;
 		ObjectDef *obj = GetObjectDef(id);
 		if(!obj->IsLoaded())
 			obj->Load();

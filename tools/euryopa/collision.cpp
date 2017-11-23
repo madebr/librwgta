@@ -1,5 +1,7 @@
 #include "euryopa.h"
 
+#include <cstring>
+
 CColModel::CColModel(void)
 {
 	this->numSpheres = 0;

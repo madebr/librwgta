@@ -18,7 +18,7 @@ using rw::bool32;
 struct ObjectInst;
 
 #include "Pad.h"
-#include "Camera.h"
+#include "camera.h"
 #include "collision.h"
 
 void panic(const char *fmt, ...);

@@ -1,5 +1,7 @@
 #include "euryopa.h"
 
+#include <cstring>
+
 static ColDef collist[NUMCOLS];
 static int numCols;
 

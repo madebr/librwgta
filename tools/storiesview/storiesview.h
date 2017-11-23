@@ -26,7 +26,7 @@ typedef uint16 float16;
 #include <streamworld.h>
 
 #include "Pad.h"
-#include "Camera.h"
+#include "camera.h"
 #include "TexListStore.h"
 
 void panic(const char *fmt, ...);
