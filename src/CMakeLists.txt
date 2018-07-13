@@ -62,6 +62,7 @@ if(LIBRWGTA_INSTALL)
     install(
         TARGETS librwgta
         EXPORT librwgta-targets
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
         LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         )
