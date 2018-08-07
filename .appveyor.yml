@@ -1,0 +1,40 @@
+image: Visual Studio 2017
+configuration: Release
+platform:
+  - Win32
+  - x64
+environment:
+  APPVEYOR_SAVE_CACHE_ON_ERROR: true
+  GIT_LIBRW: https://github.com/madebr/librw.git
+  GIT_LIBRW_BRANCH: cmake
+  INSTALL_DIR: C:\librw
+  matrix:
+    - LIBRW_PLATFORM: NULL
+    - LIBRW_PLATFORM: GL3
+    - LIBRW_PLATFORM: D3D9
+install:
+  - if %platform%==Win32 set VCPKG_TRIPLET=x86-windows-static
+  - if %platform%==x64 set VCPKG_TRIPLET=x64-windows-static
+  - if %LIBRW_PLATFORM%==GL3 vcpkg install glfw3:%VCPKG_TRIPLET% glew:%VCPKG_TRIPLET%
+  - if %LIBRW_PLATFORM%==D3D9 vcpkg install zlib:%VCPKG_TRIPLET%
+before_build:
+  - if %platform%==Win32 set CMAKE_GENERATOR=Visual Studio 15 2017
+  - if %platform%==x64 set CMAKE_GENERATOR=Visual Studio 15 2017 Win64
+  - git clone -b %GIT_LIBRW_BRANCH% %GIT_LIBRW%
+  - mkdir "%APPVEYOR_BUILD_FOLDER%\librw\build" && cd "%APPVEYOR_BUILD_FOLDER%\librw\build"
+  - cmake .. -DCMAKE_INSTALL_PREFIX="%INSTALL_DIR%" -DLIBRW_TOOLS=ON -DLIBRW_INSTALL=ON -DCMAKE_PREFIX_PATH="%INSTALL_DIR%" -G"%CMAKE_GENERATOR%" -DVCPKG_TARGET_TRIPLET=%VCPKG_TRIPLET% -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DLIBRW_PLATFORM=%LIBRW_PLATFORM%
+  - cmake --build . --target install --config %Configuration%
+  - mkdir "%APPVEYOR_BUILD_FOLDER%\build" && cd "%APPVEYOR_BUILD_FOLDER%\build"
+  - cmake .. -DCMAKE_INSTALL_PREFIX="%INSTALL_DIR%" -DLIBRWGTA_TOOLS=ON -DLIBRWGTA_INSTALL=ON -DCMAKE_PREFIX_PATH="%INSTALL_DIR%" -G"%CMAKE_GENERATOR%" -DVCPKG_TARGET_TRIPLET=%VCPKG_TRIPLET% -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake
+build:
+  project: c:\projects\librwgta\build\librwgta.sln
+  verbosity: minimal
+after_build:
+  - cd "%APPVEYOR_BUILD_FOLDER%\librw\build"
+  - cpack -C %CONFIGURATION% -G TXZ
+  - appveyor PushArtifact librw.tar.xz
+  - cd "%APPVEYOR_BUILD_FOLDER%\build"
+  - cpack -C %CONFIGURATION% -G TXZ
+  - appveyor PushArtifact librwgta.tar.xz
+cache:
+  C:\tools\vcpkg\installed\ -> .appveyor.yml

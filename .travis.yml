@@ -1,0 +1,31 @@
+language: cpp
+
+matrix:
+  include:
+  - os: linux
+    env: LIBRW_PLATFORM="NULL" GIT_LIBRW="https://github.com/madebr/librw.git" GIT_LIBRW_BRANCH="cmake"
+    script:
+    - git clone -b $GIT_LIBRW_BRANCH $GIT_LIBRW
+    - mkdir -p "$TRAVIS_BUILD_DIR/librw/build" && cd "$TRAVIS_BUILD_DIR/librw/build" && cmake "$TRAVIS_BUILD_DIR/librw" -DLIBRW_TOOLS=ON -DLIBRW_INSTALL=ON -DLIBRW_PLATFORM="$LIBRW_PLATFORM" && make VERBOSE=y DESTDIR=/tmp install
+    - mkdir -p "$TRAVIS_BUILD_DIR/build" && cd "$TRAVIS_BUILD_DIR/build" && cmake "$TRAVIS_BUILD_DIR" -DLIBRWGTA_TOOLS=ON -DLIBRWGTA_INSTALL=ON -DCMAKE_PREFIX_PATH=/tmp/usr/local
+    - make VERBOSE=y DESTDIR=/tmp install
+  - os: linux
+    env: LIBRW_PLATFORM="GL3" GIT_LIBRW="https://github.com/madebr/librw.git" GIT_LIBRW_BRANCH="cmake"
+    services: docker
+    script:
+    - git clone -b $GIT_LIBRW_BRANCH $GIT_LIBRW
+    - mkdir -p "$TRAVIS_BUILD_DIR/build"
+    - docker pull librw/gl3
+    - docker run -v "$TRAVIS_BUILD_DIR:/librwgta:ro,z" -v "$TRAVIS_BUILD_DIR/librw:/librw:ro,z" -v "$TRAVIS_BUILD_DIR:/build:rw,z" --name gl3_instance -d librw/gl3 sleep infinity
+    - docker exec -u builder gl3_instance /bin/bash -c "mkdir -p /build/librw && cd /build/librw && cmake /librw -DLIBRW_TOOLS=ON -DLIBRW_INSTALL=ON -DLIBRW_PLATFORM=$LIBRW_PLATFORM && make VERBOSE=y DESTDIR=/tmp install"
+    - docker exec -u builder gl3_instance /bin/bash -c "cd /build && cmake /librwgta -DLIBRWGTA_TOOLS=ON -DLIBRWGTA_INSTALL=ON -DCMAKE_PREFIX_PATH=/tmp/usr/local && make VERBOSE=y DESTDIR=/tmp install"
+  - os: linux
+    env: LIBRW_PLATFORM="PS2" GIT_LIBRW="https://github.com/madebr/librw.git" GIT_LIBRW_BRANCH="cmake"
+    services: docker
+    script:
+    - git clone -b $GIT_LIBRW_BRANCH $GIT_LIBRW
+    - mkdir -p "$TRAVIS_BUILD_DIR/build"
+    - docker pull librw/ps2
+    - docker run -v "$TRAVIS_BUILD_DIR:/librwgta:ro,z" -v "$TRAVIS_BUILD_DIR/librw:/librw:ro,z" -v "$TRAVIS_BUILD_DIR:/build:rw,z" --name ps2_instance -d librw/ps2 sleep infinity
+    - docker exec -u builder ps2_instance /bin/bash -c "mkdir -p /build/librw && cd /build/librw && cmake /librw -DCMAKE_TOOLCHAIN_FILE=/librw/cmake/toolchain_ps2_ee.cmake -DLIBRW_TOOLS=ON -DLIBRW_INSTALL=ON -DLIBRW_PLATFORM=$LIBRW_PLATFORM && make VERBOSE=y DESTDIR=/tmp install"
+    - docker exec -u builder ps2_instance /bin/bash -c "cd /build && cmake /librwgta -DCMAKE_TOOLCHAIN_FILE=/librw/cmake/toolchain_ps2_ee.cmake -DLIBRWGTA_TOOLS=ON -DLIBRWGTA_INSTALL=ON -DCMAKE_PREFIX_PATH=/tmp/usr/local && make VERBOSE=y DESTDIR=/tmp install"
